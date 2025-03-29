@@ -1,0 +1,44 @@
+# Smithery.ai configuration
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP
+    type: object
+    properties:
+      OBSIDIAN_API_KEY:
+        type: string
+        description: "API key for Obsidian Remote REST plugin"
+    required: ["OBSIDIAN_API_KEY"]
+  commandFunction: |-
+    (config) => ({
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_obsidian"
+      ],
+      "env": {
+        "OBSIDIAN_API_KEY": config.OBSIDIAN_API_KEY,
+        "PYTHONUNBUFFERED": "1"
+      }
+    })
+
+build:
+  dockerfile: Dockerfile
+  context: .
+service:
+  name: mcp-obsidian
+  type: web
+  ports:
+    - port: 8000
+      protocol: tcp
+  env:
+    - name: OBSIDIAN_API_KEY
+      required: true
+      description: "API key for Obsidian Remote REST plugin"
+  health:
+    path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+resources:
+  cpu: 100m
+  memory: 256Mi 
